@@ -1,0 +1,116 @@
+
+<!-- 更新调入方营业厅库存 -->
+MERGE INTO TC_ORG_STOCK TS
+		USING (SELECT MAIN.F_ORDER_REGION,
+		              MAIN.F_DIAL_IN_ORG,
+		              SUB.F_ORDER_NUM,
+		              SUB.F_GOODS_NUM,
+		              TMP.F_STOCK_TYPE_NUM,
+		              TMP.F_GOODS_COUNT,
+		              TMP.F_GOODS_MONEY
+		         FROM TO_ORDERDIAL_MAIN MAIN
+		        INNER JOIN TO_ORDERDIAL_SUB SUB
+		           ON MAIN.F_ORDER_NUM = SUB.F_ORDER_NUM
+		        INNER JOIN (SELECT TD.F_ORDER_NUM,
+		                          TD.F_GOODS_NUM,
+		                          TD.F_STOCK_TYPE_NUM,
+		                          COUNT(1) F_GOODS_COUNT,
+		                          SUM(TD.F_ORDER_PRICE) F_GOODS_MONEY
+		                     FROM TO_ORDERDIAL_SUB_DETAIL TD
+		                    WHERE TD.F_ORDER_NUM = #{orderNum}
+		                    GROUP BY TD.F_ORDER_NUM,
+		                             TD.F_GOODS_NUM,
+		                             TD.F_STOCK_TYPE_NUM) TMP
+		           ON TMP.F_ORDER_NUM = SUB.F_ORDER_NUM
+		          AND TMP.F_GOODS_NUM = sub.F_GOODS_NUM) T
+		ON (TS.F_ORG_NUM = T.F_DIAL_IN_ORG AND TS.F_GOODS_NUM = T.F_GOODS_NUM AND TS.F_STOCK_TYPE_NUM = T.F_STOCK_TYPE_NUM)
+		WHEN MATCHED THEN
+		  UPDATE
+		     SET TS.F_IN_ONWAY_COUNT = TS.F_IN_ONWAY_COUNT + T.F_GOODS_COUNT,
+		         TS.F_IN_ONWAY_MONEY = TS.F_IN_ONWAY_MONEY + T.F_GOODS_MONEY
+		WHEN NOT MATCHED THEN
+		  INSERT
+		    (TS.F_REGION_NUM,
+		     TS.F_ORG_NUM,
+		     TS.F_GOODS_NUM,
+		     TS.F_STOCK_TYPE_NUM,
+		     TS.F_GOODS_COUNT,
+		     TS.F_GOODS_MONEY,
+		     TS.F_ONWAY_COUNT,
+		     TS.F_ONWAY_MONEY,
+		     TS.F_IN_ONWAY_COUNT,
+		     TS.F_IN_ONWAY_MONEY,
+		     TS.F_OUT_ONWAY_COUNT,
+		     TS.F_OUT_ONWAY_MONEY)
+		  VALUES
+		    (T.F_ORDER_REGION,
+		     T.F_DIAL_IN_ORG,
+		     T.F_GOODS_NUM,
+		     T.F_STOCK_TYPE_NUM,
+		     0,
+		     0,
+		     0,
+		     0,
+		     T.F_GOODS_COUNT,
+		     T.F_GOODS_MONEY,
+		     0,
+		     0)
+                     
+更新调出方营业厅库存
+MERGE INTO TC_ORG_STOCK TS
+		USING (SELECT MAIN.F_ORDER_REGION,
+		              MAIN.F_DIAL_OUT_ORG,
+		              SUB.F_ORDER_NUM,
+		              SUB.F_GOODS_NUM,
+		              TMP.F_STOCK_TYPE_NUM,
+		              TMP.F_GOODS_COUNT,
+		              TMP.F_GOODS_MONEY
+		         FROM TO_ORDERDIAL_MAIN MAIN
+		        INNER JOIN TO_ORDERDIAL_SUB SUB
+		           ON MAIN.F_ORDER_NUM = SUB.F_ORDER_NUM
+		        INNER JOIN (SELECT TD.F_ORDER_NUM,
+		                          TD.F_GOODS_NUM,
+		                          TD.F_STOCK_TYPE_NUM,
+		                          COUNT(1) F_GOODS_COUNT,
+		                          SUM(TD.F_ORDER_PRICE) F_GOODS_MONEY
+		                     FROM TO_ORDERDIAL_SUB_DETAIL TD
+		                    WHERE TD.F_ORDER_NUM = #{orderNum}
+		                    GROUP BY TD.F_ORDER_NUM,
+		                             TD.F_GOODS_NUM,
+		                             TD.F_STOCK_TYPE_NUM) TMP
+		           ON TMP.F_ORDER_NUM = SUB.F_ORDER_NUM
+		          AND TMP.F_GOODS_NUM = SUB.F_GOODS_NUM) T
+		ON (TS.F_ORG_NUM = T.F_DIAL_OUT_ORG AND TS.F_GOODS_NUM = T.F_GOODS_NUM AND TS.F_STOCK_TYPE_NUM = T.F_STOCK_TYPE_NUM)
+		WHEN MATCHED THEN
+		  UPDATE
+		     SET TS.F_GOODS_COUNT     = TS.F_GOODS_COUNT - T.F_GOODS_COUNT,
+		         TS.F_GOODS_MONEY     = TS.F_GOODS_MONEY - T.F_GOODS_MONEY,
+		         TS.F_OUT_ONWAY_COUNT = TS.F_OUT_ONWAY_COUNT + T.F_GOODS_COUNT,
+		         TS.F_OUT_ONWAY_MONEY = TS.F_OUT_ONWAY_MONEY + T.F_GOODS_MONEY
+		WHEN NOT MATCHED THEN
+		  INSERT
+		    (TS.F_REGION_NUM,
+		     TS.F_ORG_NUM,
+		     TS.F_GOODS_NUM,
+		     TS.F_STOCK_TYPE_NUM,
+		     TS.F_GOODS_COUNT,
+		     TS.F_GOODS_MONEY,
+		     TS.F_ONWAY_COUNT,
+		     TS.F_ONWAY_MONEY,
+		     TS.F_IN_ONWAY_COUNT,
+		     TS.F_IN_ONWAY_MONEY,
+		     TS.F_OUT_ONWAY_COUNT,
+		     TS.F_OUT_ONWAY_MONEY)
+		  VALUES
+		    (T.F_ORDER_REGION,
+		     T.F_DIAL_OUT_ORG,
+		     T.F_GOODS_NUM,
+		     T.F_STOCK_TYPE_NUM,
+		     0,
+		     0,
+		     0,
+		     0,
+		     0,
+		     0,
+		     T.F_GOODS_COUNT,
+		     T.F_GOODS_MONEY)

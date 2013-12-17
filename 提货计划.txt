@@ -1,0 +1,39 @@
+
+1.共通部分
+当前库存分配量（地市）TO_STOCK_REGION.F_DIST_COUNT
+有效订单量（地市） TO_STOCK_REGION.F_ORDER_COUNT - TO_STOCK_REGION.F_DELIV_COUNT + TO_STOCK_REGION.F_ACCEPT_COUNT
+本月可要货量（地市）当前库存分配量 - 有效订单量
+销量  TC_BILL_SALE_SUB.F_SALE_COUNT
+
+2.地市提货计划
+有效订单量（地市）
+签收量 TO_STOCK_REGION.F_ACCEPT_COUNT
+本月已配送量 TO_STOCK_REGION.F_DELIV_COUNT
+要货预占量 TO_STOCK_REGION.F_ORDER_COUNT  - TO_STOCK_REGION.F_DELIV_COUNT
+当前库存  TO_STOCK_REALTIME.F_STOCK_COUNT
+
+3.区县提货计划
+有效订单量  TC_ORG_STOCK.F_ONWAY_COUNT + TC_ORG_PSSM.F_FIRST_COUNT
+签收量 TC_ORG_PSSM.F_IN_DIST_COUNT
+本月已配送量 TC_ORG_PSSM.F_OUT_DIST_COUNT
+要货预占量 TC_ORG_STOCK.F_ONWAY_COUNT
+当前库存  TC_ORG_STOCK.F_GOODS_COUNT
+
+
+备注：
+1.表TO_STOCK_REGION 地市二级库存表【结转】
+        F_DIST_COUNT 累计分配数量【可用数量=累计分配数量-累计要货数量】
+        F_DELIV_COUNT 累计发货数量【在途数量=累计要货数量-累计发货数量】
+        F_ORDER_COUNT 累计要货数量【实际库存 = 累计分配数量 - 累计发货数量】
+        F_ACCEPT_COUNT 累计签收数量 
+2.表TO_STOCK_REALTIME 仓库实时库存表
+        F_STOCK_COUNT 库存数量
+3.表TC_ORG_PSSM进销存表(月表，按地市分区)
+        F_FIRST_COUNT 期初数量
+        F_IN_DIST_COUNT 配进数量（自办营业厅验收）
+        F_OUT_DIST_COUNT 配出数量（自办厅配送，仓储出库）
+4.表TC_BILL_SALE_SUB销售单子表
+        F_SALE_COUNT 销售数量
+
+
+集采计划是否要剔除要货限制关系的商品或品类

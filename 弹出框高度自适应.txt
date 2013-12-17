@@ -1,0 +1,9 @@
+1、在弹出框jsp页面(如增加页面)引用的业务js的初始化中加入如下js代码
+$(document).ready(function(){
+...
+var height= $(window).height()-22;
+$("#main_div").css("height", height + "px");
+...
+});
+用来调整弹出框jsp页面main_div的高度，该div可根据具体内容设置是否滚动
+2、父列表页面的弹出JS操作：var size = {"width" : "1000"};高度不设置
